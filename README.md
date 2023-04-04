@@ -53,7 +53,7 @@ Johnny:
 -Implementation of ML algorithm  
 -Theory (math related) on whichever algorithm we choose to employ  
 
-Ethan:
+Ethan:  
 -Data collection and exploring how to combine different data sources.  
 -Implementing a ML algorithm to a topic we are passionate about.  
 -Exploring different algorithms we could potentially implement on our data.
