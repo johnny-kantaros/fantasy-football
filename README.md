@@ -45,8 +45,15 @@ Most projects should involve data in some way, but certain projects may not requ
 ## What You Will Learn
 Each group member should return to their stated goals from the reflective goal-setting assignment at the beginning of the course. Then, in this section, please state what each group member intends to learn through working on the project, relating your intentions to your stated goals. You might be thinking of certain algorithms, software packages, version control, project management, effective teamwork, etc.
 
+Johnny:
+
+-Data collection, web scraping, working with API's
+-
+
 ## Risk Statement
-What are two things that could potentially stop you from achieving the full deliverable above? Maybe it turns out that the pattern you thought would be present in the data just doesn’t exist? Or maybe your idea requires more computational power than is available to you? What particular risks might be applicable for your project?
+
+1. It is possible that we cannot get all the data we need to accurately predict performance. There is no guarantee that we can get all of ESPN's data set, but I am hopeful through enough effort we will put together a good data set. We are also at risk of not having certain data which affects performance like opposing match-ups (individually), change of coaches and how this affects the player, team acquisitions, injuries, etc.
+2. Finding the correct algorithm and feature selection will be tricky and could prevent optimal performance. We (hopefully) will have many features to choose from, so narrowing down these columns will be risky. Additionally, algorithm choice / implementation will be tricky. We are outputting a ranking, which will most likely depend on a quantitative metric. As a result, we need to figure out some sort of regression model that will optimally rank our players.
 
 ## Ethics Statement
 
