@@ -49,9 +49,15 @@ Each group member should return to their stated goals from the reflective goal-s
 
 Johnny:
 
--Data collection, web scraping, working with API's
--Implementation of ML algorithm
--Theory (math related) on whichever algorithm we choose to employ
+-Data collection, web scraping, working with API's  
+-Implementation of ML algorithm  
+-Theory (math related) on whichever algorithm we choose to employ  
+
+Ethan:
+-Data collection and exploring how to combine different data sources.  
+-Implementing a ML algorithm to a topic we are passionate about.  
+-Exploring different algorithms we could potentially implement on our data.
+
 
 ## Risk Statement
 
