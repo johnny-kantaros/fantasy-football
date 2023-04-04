@@ -50,7 +50,8 @@ Each group member should return to their stated goals from the reflective goal-s
 Johnny:
 
 -Data collection, web scraping, working with API's
--
+-Implementation of ML algorithm
+-Theory (math related) on whichever algorithm we choose to employ
 
 ## Risk Statement
 
