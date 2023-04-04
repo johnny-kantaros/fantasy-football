@@ -5,6 +5,8 @@ What problem your project addresses.
 The overall approach you will use to solve the problem.
 How you propose to evaluate your success against your stated goals.
 
+We are hoping to create a algorithm that looks at NFL players performance and predicts their performance for the following year. By doing so, we will be able to create a ranking that can be used to predict Fantasy Football Performance. We will evaluate the effectiveness of our model by running it against previous years and seeing how it performed predicting player performance vs how they actually performed that year.
+
 ## Motivation and Question
 Describe your motivation for your project idea. Some (shortened) examples of good types of motivations:
 
@@ -13,6 +15,8 @@ We have user information for which predictive models would help us give users be
 We have performance data (e.g. from sports teams) for which predictive models could help us make better decisions.
 Algorithmic bias is an increasingly urgent challenge as machine learning products proliferate, and we want to explore it more deeply.
 You should be more specific than these: describe your specific data set (if applicable); your scientific questions; the type of decisions your model could inform; etc.
+
+We are all very interested in the intersection between sports and statistics. Football is a sport where statistics are tracked frequently and there are many available. We are hoping to find which statistics and variables are more significant in determining a players performance year to year. Fantasy Football is played by millions of people all over the world and an effective algorithm would be helpful to all players.
 
 ## Planned Deliverables
 Concisely state what you are aiming to create and what capabilities it will have. For most projects, I would expect the deliverable to include:
@@ -25,6 +29,8 @@ You should describe what your deliverable will be able to do and how you will ev
 
 “Full success.” What will your deliverable be if everything works out for you exactly as you plan?
 “Partial success.” What useful deliverable will you be able to offer even if things don’t 100% work out? For example, maybe you aren’t able to get that webapp together, but you can still create a code repository that showcases the machine learning pipeline needed to use to support the app. Have a contingency plan!
+
+We are hoping to deliver a Python package containing all code we will use for our algorithm and a Jupyter notebook where analysis and performance is examined. We will need to extensively clean our data and ensure the data set we are looking at has all variables we are hoping to look at. If our model proves to be ineffective, at least we will be able to determine which statistics are not helpful in predicting performance year to year.
 
 ## Written Deliverables
 You’ll also write a blog post on your project; you don’t have to discuss this post in your proposal though.
