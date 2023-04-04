@@ -43,17 +43,21 @@ Each group member should return to their stated goals from the reflective goal-s
 What are two things that could potentially stop you from achieving the full deliverable above? Maybe it turns out that the pattern you thought would be present in the data just doesn’t exist? Or maybe your idea requires more computational power than is available to you? What particular risks might be applicable for your project?
 
 ## Ethics Statement
-All projects we undertake involve decisions about whose interests matter; which problems are important; and which tradeoffs are considered acceptable. Take some time to reflect on the potential impacts of your project on its prospective users and the broader world. Address the following questions:
 
-What groups of people have the potential to benefit from our project?
-What groups of people have the potential to be excluded from benefit or even harmed from our project?
-Will the world become an overall better place because we made our project? Describe at least 2 assumptions behind your answer. For example, if your project aims to make it easier to predict crime, your assumptions might include:
-Criminal activity is predictable based on other features of a person or location.
-The world is a better place when police are able to perform their roles more efficiently.
-If your project involves making decisions or recommendations, then you will also need to consider possible forms of algorithmic bias in your work. Here are some relevant examples:
+#### What groups of people have the potential to benefit from our project?
 
-A recipe recommendation app can privilege the cuisines of some locales over others. Will your user search recipes by ingredients? Peanut butter and tomato might seem an odd combination in the context of European cuisine, but is common in many traditional dishes of the African diaspora. A similar set of questions applies to recommendation systems related to style or beauty.
-A sentiment analyzer must be trained on specific languages. What languages will be included? Will diverse dialects be included, or only the “standard” version of the target language? Who would be excluded by such a choice, and how will you communicate about your limitations?
+Primarily, fantasy football players. Those who use our algorithm will (hopefully) receive insight into future player performance and can therefore edit their decision making to maximize their season.
+
+#### What groups of people have the potential to be excluded from benefit or even harmed from our project?
+
+The other members of the league who do not use the algorithm will not have the insight and therefore might be at a disadvantage. At the very least they will be excluded from the benefit.
+
+#### Will the world become an overall better place because we made our project? Describe at least 2 assumptions behind your answer. For example, if your project aims to make it easier to predict crime, your assumptions might include:
+
+Not necessarily. It might aid some fantasy football owners, but I do not think there are any large scale benefits or harms. 
 
 ## Tentative Timeline
-We will have a checkpoint for the project in Week 9 or 10, and then final presentations in Week 12. With this in mind, please describe what you expect to achieve after three and six. Your goal by the three-week check-in should be to have “something that works.” For example, maybe in three weeks you’ll ready to demonstrate the data acquisition pipeline and show some exploratory analysis, and in the last couple weeks you’ll actually implement your machine learning models.
+
+In the first three weeks, we will primarily focus on data collection, exploration, and wrangling. We believe a large component to this project will be scraping data off the web and through various API's. We also expect us to have to impute our own data, much of which will be calculated using various statistical techniques. As a result, we hope to spend the first three weeks in this data collection/wrangling phase. By the end of week 3, hopefully we have a working data set.
+
+In the next three weeks, we will create our algorithm. During this time period, we will implement our own algorithm to rank players based on performance. By the end of week 6, we hope to have a working algorithm (not necessarily optimal yet).
