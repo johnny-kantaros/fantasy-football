@@ -42,6 +42,8 @@ Please pay special attention to the question of data. If your project idea invol
 
 Most projects should involve data in some way, but certain projects may not require data. Ask me if you’re not sure.
 
+We will be working with numerous data sources. We are hoping to take the basic stats that all Fantasy Football users look at and add several additional statistics we think might be helpful in predicting performance. We are hoping to create a master dataset that we can use to run learning methods and make conclusions on. Once we have a functioning dataset, we will need to run learning models that will give us a ranking for the players in our dataset.
+
 ## What You Will Learn
 Each group member should return to their stated goals from the reflective goal-setting assignment at the beginning of the course. Then, in this section, please state what each group member intends to learn through working on the project, relating your intentions to your stated goals. You might be thinking of certain algorithms, software packages, version control, project management, effective teamwork, etc.
 
