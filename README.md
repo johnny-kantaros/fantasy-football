@@ -33,6 +33,7 @@ We will be working with numerous data sources. We are hoping to take the basic s
 Each group member should return to their stated goals from the reflective goal-setting assignment at the beginning of the course. Then, in this section, please state what each group member intends to learn through working on the project, relating your intentions to your stated goals. You might be thinking of certain algorithms, software packages, version control, project management, effective teamwork, etc.
 
 Johnny:
+
 -Data collection, web scraping, working with API's  
 -Implementation of ML algorithm  
 -Theory (math related) on whichever algorithm we choose to employ  
@@ -43,6 +44,7 @@ Ethan:
 -Exploring different algorithms we could potentially implement on our data.
 
 Dean:
+
 -Data collection and integration.
 -Creating and implementing a ML algorithm to a real world topic.
 -Understanding, on a mathematical level, why one algorithm would be better than another.
