@@ -27,3 +27,24 @@ class Fantasy:
         # merged_df.drop("Last Name")
 
         return merged_df
+    
+    def makeRegularData(self, df):
+        QB_data = df[df["Pos"] == "QB"]
+        qb_drop_columns = ['Tgt', 'Rec', 'Receiving_Yds', 'Receiving_Td', 'Receiving_1st', 'Return_Yds', 'Return_Td', '2PT',]
+        QB_data = QB_data.drop(qb_drop_columns, axis=1)
+        
+
+        RB_data = df[df["Pos"] == "RB"]
+        rb_drop_columns = [ 'Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st']
+        RB_data = RB_data.drop(rb_drop_columns, axis=1)
+
+        WR_data = df[df["Pos"] == "WR"]
+        wr_drop_columns = ['Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st']
+        WR_data = WR_data.drop(wr_drop_columns, axis=1)
+
+        TE_data = df[df["Pos"] == "TE"]
+        te_drop_columns = ['Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st', 'Return_Yds', 'Return_Td']
+        TE_data = TE_data.drop(te_drop_columns, axis=1)
+        
+
+        return QB_data, RB_data, WR_data, TE_data
