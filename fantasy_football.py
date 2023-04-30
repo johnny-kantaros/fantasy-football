@@ -40,9 +40,14 @@ class Fantasy:
 
     def addAdvanced(self, df_raw, df_advanced):
         # new data frame with split value columns
-        df_advanced['Player'] = df_advanced['Player'].apply(self.extract_initial_last_name)
+        df_advanced['Name'] = df_advanced['Player'].apply(self.extract_initial_last_name)
+        df_raw['Name'] = df_raw['Player']
 
-        merged_df = df_raw.merge(df_advanced, on=['Player', 'Tm'], how='left').fillna(0)
+        print(df_advanced['Name'])
+        print(df_raw['Name'])
+
+        # , 'Tm'
+        merged_df = df_raw.merge(df_advanced, on=['Name'], how='left').fillna(0)
 
         return merged_df
     
