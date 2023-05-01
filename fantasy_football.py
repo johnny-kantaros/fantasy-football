@@ -31,7 +31,7 @@ class Fantasy:
 
         return df, y
 
-    def fix_columns_WR(self, df):
+    def fix_columns_receiver(self, df):
         WR_final = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y', 'Age_y', 'G_y', 'GS_y',
        'Tgt_y', 'Rec_y', 'Yds_y', 'TD_y', '1D_y', 'YBC_y', 'YAC_y', 'BrkTkl_y', 'Player_y'], axis=1)
         
