@@ -7,7 +7,8 @@ class Fantasy:
 
     def read_data():
 
-        df = pd.read_excel('2022-offense.xlsx', sheet_name='Offense_Prior_Actuals', header=3)
+        # Get X matrix (base)
+        df = pd.read_excel('2021-offense.xlsx', sheet_name='Offense_2020', header=3)
 
         # Drop columns that we don't need
         drop_columns = ['GS', 'Bye', 'Notes', 'Rank', 'Y! Roto', 'Δ', 'Y! Old', 'Std', 'Δ.1', 'Std Old', 'PPR', 'Δ.2', 'PPR Old', '% Own', 'Fan Pts', 'PPG']
@@ -16,9 +17,16 @@ class Fantasy:
         # Change names of duplicate columns
         updated_columns = {'Yds': 'Passing_Yds', 'Yds.1': 'Rushing_Yds', 'Yds.2': 'Receiving_Yds', 'Yds.3': 'Return_Yds', 
                         'TD': 'Passing_Td', 'TD.1': 'Rushing_Td', 'TD.2': 'Receiving_Td', 'TD.3': 'Return_Td', 
-                        '1st': 'Passing_1st', '1st.1': 'Rushing_1st', '1st.2': 'Receiving_1st'}
+                        '1st': 'Passing_1st', '1st.1': 'Rushing_1st', '1st.2': 'Receiving_1st', 'Team': 'Tm'}
         df = df.rename(columns=updated_columns)
-        return df
+
+
+        # Get y vector
+
+        df2 = pd.read_excel('2022-offense.xlsx', sheet_name='Offense_Prior_Actuals', header=3)
+        y = df2['Fan Pts']
+
+        return df, y
 
     def addContracts(self, df_raw, df_contracts):
         df_raw
@@ -34,7 +42,7 @@ class Fantasy:
         # new data frame with split value columns
         df_advanced['Player'] = df_advanced['Player'].apply(self.extract_initial_last_name)
 
-        merged_df = df_raw.merge(df_advanced, on='Player', how='left').fillna(0)
+        merged_df = df_raw.merge(df_advanced, on=['Player', 'Tm'], how='left').fillna(0)
 
         return merged_df
     
