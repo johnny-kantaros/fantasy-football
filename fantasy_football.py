@@ -5,10 +5,10 @@ from bs4 import BeautifulSoup
 class Fantasy:
 
 
-    def read_data():
-
+    def read_data(year):
+        year_prior = int(year) - 1
         # Get X matrix (base)
-        df = pd.read_excel('2021-offense.xlsx', sheet_name='Offense_2020', header=3)
+        df = pd.read_excel(year + '-offense.xlsx', sheet_name='Offense_2020', header=3)
 
         # Drop columns that we don't need
         drop_columns = ['GS', 'Bye', 'Notes', 'Rank', 'Y! Roto', 'Δ', 'Y! Old', 'Std', 'Δ.1', 'Std Old', 'PPR', 'Δ.2', 'PPR Old', '% Own', 'Fan Pts', 'PPG']
@@ -24,7 +24,10 @@ class Fantasy:
         # Get y vector
 
         df2 = pd.read_excel('2022-offense.xlsx', sheet_name='Offense_Prior_Actuals', header=3)
-        y = df2['Fan Pts']
+        y = pd.DataFrame()
+        y['Player'] = df2['Player']
+        y['points'] = df2['Fan Pts']
+
 
         return df, y
 
@@ -38,12 +41,39 @@ class Fantasy:
         # for i in range(len(df_raw)):
         #     print(df_raw.loc[i, "Player"], df_raw.loc[i, "Team"])
 
+    def readyToMerge(self, df):
+        df['Name'] = df['Player'].apply(self.extract_initial_last_name)
+
+        df.drop(['Player'], axis=1)
+
+        return df
+    
+
     def addAdvanced(self, df_raw, df_advanced):
         # new data frame with split value columns
-        df_advanced['Player'] = df_advanced['Player'].apply(self.extract_initial_last_name)
+        # print(type(df_advanced))
+        # print(df_advanced['Player'])
+        df_advanced['Name'] = df_advanced['Player'].apply(self.extract_initial_last_name)
+        df_raw['Name'] = df_raw['Player']
 
-        merged_df = df_raw.merge(df_advanced, on=['Player', 'Tm'], how='left').fillna(0)
+        # df_raw.drop(['Player'], axis=1)
+        # df_advanced.drop(['Player'], axis=1)
 
+        merged_df = df_raw.merge(df_advanced, on=['Name'], how='left').fillna(0)
+
+        return merged_df
+    
+    def simpleMerge(self, df_1, df_2):
+        # new data frame with split value columns
+        # print(df_2)
+        df_2['Name'] = df_2['Player']
+        merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
+
+        return merged_df
+    
+    def secondMerge(self, df_1, df_2):
+        # new data frame with split value columns
+        merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
         return merged_df
     
     def extract_initial_last_name(self, full_name):
