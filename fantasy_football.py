@@ -31,11 +31,11 @@ class Fantasy:
 
         return df, y
 
-    def fix_columns_receiver(self, df):
-        WR_final = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y', 'Age_y', 'G_y', 'GS_y',
+    def fix_columns(self, df):
+        temp = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y', 'Age_y', 'G_y', 'GS_y',
        'Tgt_y', 'Rec_y', 'Yds_y', 'TD_y', '1D_y', 'YBC_y', 'YAC_y', 'BrkTkl_y', 'Player_y'], axis=1)
         
-        WR = WR_final.rename(columns = {"Player_x": "Player", 
+        output = temp.rename(columns = {"Player_x": "Player", 
                           "Tm_x": "Tm", 
                           "Pos_x": "Pos", 
                           "Att_x": "Att", 
@@ -51,7 +51,17 @@ class Fantasy:
                           "YAC_x": "YAC", 
                           "BrkTkl_x": "BrkTkl"})
         
-        return WR
+        return output
+    
+    def fix_columns_QB(self, df):
+        temp = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y'], axis=1)
+        
+        output = temp.rename(columns = {"Player_x": "Player", 
+                                "Tm_x": "Tm", 
+                                "Pos_x": "Pos", 
+                                "Att_x": "Att", })
+        
+        return output
 
     def readyToMerge(self, df):
         df['Name'] = df['Player'].apply(self.extract_initial_last_name)
