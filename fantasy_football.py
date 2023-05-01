@@ -41,6 +41,14 @@ class Fantasy:
         # for i in range(len(df_raw)):
         #     print(df_raw.loc[i, "Player"], df_raw.loc[i, "Team"])
 
+    def readyToMerge(self, df):
+        df['Name'] = df['Player'].apply(self.extract_initial_last_name)
+
+        df.drop(['Player'], axis=1)
+
+        return df
+    
+
     def addAdvanced(self, df_raw, df_advanced):
         # new data frame with split value columns
         # print(type(df_advanced))
@@ -48,16 +56,24 @@ class Fantasy:
         df_advanced['Name'] = df_advanced['Player'].apply(self.extract_initial_last_name)
         df_raw['Name'] = df_raw['Player']
 
+        # df_raw.drop(['Player'], axis=1)
+        # df_advanced.drop(['Player'], axis=1)
+
         merged_df = df_raw.merge(df_advanced, on=['Name'], how='left').fillna(0)
 
         return merged_df
     
     def simpleMerge(self, df_1, df_2):
         # new data frame with split value columns
-        print(df_2)
+        # print(df_2)
         df_2['Name'] = df_2['Player']
         merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
 
+        return merged_df
+    
+    def secondMerge(self, df_1, df_2):
+        # new data frame with split value columns
+        merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
         return merged_df
     
     def extract_initial_last_name(self, full_name):
