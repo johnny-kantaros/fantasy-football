@@ -150,3 +150,59 @@ class Fantasy:
             table['Player'] = table['Player'].str.replace('*', '')
             table['Player'] = table['Player'].str.replace('+', '')
             return table
+
+
+    def getTeamStats(self, year):
+        # Get the raw team stats for all categories from NFL.com
+        passing_stats = pd.DataFrame(pd.read_html("https://www.nfl.com/stats/team-stats/offense/passing/"+ str(year) +"/reg/all")[0])
+        rushing_stats = pd.DataFrame(pd.read_html("https://www.nfl.com/stats/team-stats/offense/rushing/"+str(year)+"/reg/all")[0])
+        receiving_stats = pd.DataFrame(pd.read_html("https://www.nfl.com/stats/team-stats/offense/receiving/"+str(year)+"/reg/all")[0])
+        scoring_stats = pd.DataFrame(pd.read_html("https://www.nfl.com/stats/team-stats/offense/scoring/"+str(year)+"/reg/all")[0])
+        downs_stats = pd.DataFrame(pd.read_html("https://www.nfl.com/stats/team-stats/offense/downs/"+str(year)+"/reg/all")[0])
+
+        # Sort all of the different df's by team so they are lined up
+        passing_stats.sort_values(by="Team", inplace=True)
+        rushing_stats.sort_values(by="Team", inplace= True)
+        receiving_stats.sort_values(by="Team", inplace=True)
+        scoring_stats.sort_values(by="Team", inplace=True)
+        downs_stats.sort_values(by="Team", inplace=True)
+
+        # Drop teams from the last categories so team name is not repeated
+        rushing_stats.drop(columns=["Team"], axis=1, inplace=True)
+        receiving_stats.drop(columns=["Team"], axis=1, inplace=True)
+        scoring_stats.drop(columns=["Team"], axis=1, inplace=True)
+        downs_stats.drop(columns=["Team"], axis=1, inplace=True)
+
+        # Team name formatting error fix
+        passing_stats['Team'] = passing_stats['Team'].apply(lambda x: x[:int(len(x)/2)])
+
+        # Combine df's
+        team_stats = pd.concat([passing_stats, rushing_stats, receiving_stats, scoring_stats, downs_stats], axis=1)
+
+        team_stats = team_stats.reset_index(drop=True)
+
+        return team_stats
+    
+
+    
+    def getDraftData(self, year):
+
+        # Used to map apreviations from SportsReference.com to NFL.com
+        nfl_abrv = {"SFO": "49ers", "CHI": "Bears", "CIN": "Bengals", "BUF": "Bills", "DEN": "Broncos", "CLE": "Browns", "TAM": "Buccaneers",
+             "ARI": "Cardinals", "LAC": "Chargers", "KAN": "Chiefs", "IND": "Colts", "DAL": "Cowboys", "MIA": "Dolphins", "PHI": "Eagles",
+              "ATL": "Falcons", "WAS": "Football Team", "NYG": "Giants", "JAX": "Jaguars", "NYJ": "Jets", "DET": "Lions", "GNB": "Packers",
+               "CAR": "Panthers", "NWE": "Patriots", "LVR": "Raiders", "LAR": "Rams", "BAL": "Ravens", "NOR": "Saints", "SEA": "Seahawks",
+                "PIT": "Steelers", "HOU": "Texans", "TEN": "Titans", "MIN": "Vikings" }
+
+        raw_draft = pd.DataFrame(pd.read_html("https://www.pro-football-reference.com/years/"+str(year)+"/draft.htm")[0])
+
+        raw_draft.columns = raw_draft.columns.droplevel(0)
+
+        raw_draft = raw_draft[["Pick", "Tm", "Player"]]
+
+        raw_draft["Tm"] = raw_draft["Tm"].map(nfl_abrv)
+
+        raw_draft = raw_draft.rename(columns={"Tm": "Team"})
+
+        return raw_draft
+    
