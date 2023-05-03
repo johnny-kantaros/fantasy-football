@@ -5,8 +5,17 @@ from bs4 import BeautifulSoup
 class Fantasy:
 
 
+    """
+    
+    Function for web-scraping our main player data
+
+    Inputs: year
+    Outputs: df (X matrix), y (target vector)
+    
+    """
+
     def read_data(year):
-        year_prior = int(year) - 1
+
         # Get X matrix (base)
         df = pd.read_excel(year + '-offense.xlsx', sheet_name='Offense_2020', header=3)
 
@@ -26,77 +35,26 @@ class Fantasy:
         df2 = pd.read_excel('2022-offense.xlsx', sheet_name='Offense_Prior_Actuals', header=3)
         y = pd.DataFrame()
         y['Player'] = df2['Player']
-        y['points'] = df2['Fan Pts']
+        y['PPG'] = df2['PPG']
+        y['Pos'] = df2['Pos']
 
 
         return df, y
 
-    def fix_columns(self, df):
-        temp = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y', 'Age_y', 'G_y', 'GS_y',
-       'Tgt_y', 'Rec_y', 'Yds_y', 'TD_y', '1D_y', 'YBC_y', 'YAC_y', 'BrkTkl_y', 'Player_y'], axis=1)
-        
-        output = temp.rename(columns = {"Player_x": "Player", 
-                          "Tm_x": "Tm", 
-                          "Pos_x": "Pos", 
-                          "Att_x": "Att", 
-                          "Age_x": "Age", 
-                          "G_x": "G", 
-                          "GS_x": "GS",
-                          "Tgt_x": "Tgt", 
-                          "Rec_x": "Rec", 
-                          "Yds_x": "Yds", 
-                          "TD_x": "TD", 
-                          "1D_x": "1D", 
-                          "YBC_x": "YBC", 
-                          "YAC_x": "YAC", 
-                          "BrkTkl_x": "BrkTkl"})
-        
-        return output
+
+
+
+
+    """
     
-    def fix_columns_QB(self, df):
-        temp = df.drop(['Player_y', 'Tm_y', 'Pos_y', 'Att_y'], axis=1)
-        
-        output = temp.rename(columns = {"Player_x": "Player", 
-                                "Tm_x": "Tm", 
-                                "Pos_x": "Pos", 
-                                "Att_x": "Att", })
-        
-        return output
+    Function to properly format player names in anticipation of merging
 
-    def readyToMerge(self, df):
-        df['Name'] = df['Player'].apply(self.extract_initial_last_name)
-
-        df.drop(['Player'], axis=1)
-
-        return df
+    Inputs: full name (Pandas column)
+    Outputs: Corrected column
+    
+    """
     
 
-    def addAdvanced(self, df_raw, df_advanced):
-        # new data frame with split value columns
-        # print(type(df_advanced))
-        # print(df_advanced['Player'])
-        df_advanced['Name'] = df_advanced['Player'].apply(self.extract_initial_last_name)
-        df_raw['Name'] = df_raw['Player']
-
-        # df_raw.drop(['Player'], axis=1)
-        # df_advanced.drop(['Player'], axis=1)
-
-        merged_df = df_raw.merge(df_advanced, on=['Name'], how='left').fillna(0)
-
-        return merged_df
-    
-    def simpleMerge(self, df_1, df_2):
-        # new data frame with split value columns
-        # print(df_2)
-        df_2['Name'] = df_2['Player']
-        merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
-
-        return merged_df
-    
-    def secondMerge(self, df_1, df_2):
-        # new data frame with split value columns
-        merged_df = df_1.merge(df_2, on=['Name'], how='left').fillna(0)
-        return merged_df
     
     def extract_initial_last_name(self, full_name):
         name_parts = full_name.split(' ')
@@ -105,12 +63,27 @@ class Fantasy:
         elif len(name_parts) == 2:
             first_name, last_name = name_parts
             return f"{first_name[0]}. {last_name}"
-        else:
-            return full_name
+        elif len(name_parts) == 3:
+            first_name = name_parts[0]
+            last_name = name_parts[1]
+            rest = name_parts[2]
+            return f"{first_name[0]}. {last_name} {rest}"
 
 
+
+
+
+
+    """
     
-    def makeRegularData(self, df, position):
+    Function to split the df by position
+
+    Inputs: df, position
+    Outputs: sliced df
+    
+    """
+    
+    def splitByPos(self, df, position):
         QB_data = df[df["Pos"] == "QB"]
         qb_drop_columns = ['Tgt', 'Rec', 'Receiving_Yds', 'Receiving_Td', 'Receiving_1st', 'Return_Yds', 'Return_Td', '2PT',]
         QB_data = QB_data.drop(qb_drop_columns, axis=1)
@@ -135,6 +108,19 @@ class Fantasy:
             return WR_data
         elif position == "TE":
             return TE_data
+        
+
+
+
+
+    """
+    
+    Function to web-scrape advanced stats
+
+    Inputs: type of stat, year
+    Outputs: Advanced stats in pandas df
+    
+    """
 
     
     def getAdvancedStats(self, type, year):
@@ -142,18 +128,60 @@ class Fantasy:
 
 
         if type == "rushing":
-            return self.get_table(url_pro_football_reference, "rushing")
+
+            table = self.get_table(url_pro_football_reference, "rushing")
+
+            # Drop unneeded columns
+            drop_cols = ['Age', 'YBC', 'Tm', 'Att', 'G', 'GS', 'Yds', 'Pos', 'TD', '1D', 'YAC', 'BrkTkl']
+            table = table.drop(drop_cols, axis=1)
+
+            
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
+
+            
+             
         
         elif type == "receiving":
-            return self.get_table(url_pro_football_reference, "receiving")
+            
+            table = self.get_table(url_pro_football_reference, "receiving")
 
+            drop_cols = ['YBC', 'Tm', 'G', 'GS', 'Tgt', 'Rec', 'Yds', 'Pos', 'TD', '1D', 'YBC', 'YAC', 'BrkTkl', 'Drop']
+            table = table.drop(drop_cols, axis=1)
+            
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
         else:
 
             table = pd.read_html(url_pro_football_reference, header=1)[0]
             table['Player'] = table['Player'].str.replace('*', '')
             table['Player'] = table['Player'].str.replace('+', '')
-        
-            return table
+
+            drop_cols = ['Tm', 'G', 'GS', 'Cmp', 'Att', 'Yds', 'IAY', 'CAY', 'YAC', 'Pos']
+            table = table.drop(drop_cols, axis=1)
+
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
+
+
+        return table
+    
+
+
+
+
+
+    """
+    
+    Helper function used to bypass dynamically generated JS tables
+
+    Input: link, type
+    Output: table (Pandas Df)
+    
+    """
     
 
     def get_table(self, link, type):
