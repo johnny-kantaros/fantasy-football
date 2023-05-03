@@ -1,6 +1,13 @@
 import pandas as pd
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from sklearn.model_selection import KFold
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import numpy as np
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.preprocessing import StandardScaler
+
 
 class Fantasy:
 
@@ -177,12 +184,36 @@ class Fantasy:
 
         # Drop teams from the last categories so team name is not repeated
         rushing_stats.drop(columns=["Team"], axis=1, inplace=True)
+        new_cols = {}
+        for col in rushing_stats.columns:
+            new_cols[col] = 'rushing_' + col
+        rushing_stats = rushing_stats.rename(columns=new_cols)
+
         receiving_stats.drop(columns=["Team"], axis=1, inplace=True)
+        new_cols = {}
+        for col in receiving_stats.columns:
+            new_cols[col] = 'receiving_' + col
+        receiving_stats = receiving_stats.rename(columns=new_cols)
+
         scoring_stats.drop(columns=["Team"], axis=1, inplace=True)
+        new_cols = {}
+        for col in scoring_stats.columns:
+            new_cols[col] = 'scoring_' + col
+        scoring_stats = scoring_stats.rename(columns=new_cols)
+
         downs_stats.drop(columns=["Team"], axis=1, inplace=True)
+        new_cols = {}
+        for col in downs_stats.columns:
+            new_cols[col] = 'downs_' + col
+        downs_stats = downs_stats.rename(columns=new_cols)
 
         # Team name formatting error fix
         passing_stats['Team'] = passing_stats['Team'].apply(lambda x: x[:int(len(x)/2)])
+        new_cols = {}
+        for col in passing_stats.columns:
+            if col != "Team":
+                new_cols[col] = 'passing_' + col
+        passing_stats = passing_stats.rename(columns=new_cols)
 
         # Combine df's
         team_stats = pd.concat([passing_stats, rushing_stats, receiving_stats, scoring_stats, downs_stats], axis=1)
@@ -206,11 +237,101 @@ class Fantasy:
 
         raw_draft.columns = raw_draft.columns.droplevel(0)
 
-        raw_draft = raw_draft[["Pick", "Tm", "Player"]]
+        raw_draft = raw_draft[["Pick", "Tm", "Player", "Pos"]]
+
+        raw_draft = raw_draft[raw_draft["Pos"].isin(["QB", "RB", "WR", "TE", "K"])]
 
         raw_draft["Tm"] = raw_draft["Tm"].map(nfl_abrv)
 
         raw_draft = raw_draft.rename(columns={"Tm": "Team"})
 
         return raw_draft
+
+    def getYearlyRookieData(self, year):
+
+        total_data = pd.DataFrame()
+
+        for y in range(year - 15, year + 1):
+            draft_data = self.getDraftData(year=str(y))
+            team_data = self.getTeamStats(year=str(y - 1))
+            rookie_stats = pd.merge(draft_data, team_data, on='Team')
+
+            labels = pd.DataFrame(pd.read_html("https://www.fantasypros.com/nfl/reports/leaders/?year=" + str(y))[0])
+
+            labels = labels[["Player", "AVG"]]
+
+            labels = labels.drop_duplicates(subset="Player")
+
+            full_data = pd.merge(rookie_stats, labels, on='Player')
+
+            total_data = pd.concat([total_data, full_data], axis=0)
+
+
+        total_data = total_data.reset_index(drop=True)
+
+        return total_data
+    
+
+    def getBestFeatures(self, X, y, numFolds= 3, numFeatures = 5):
+        
+
+        selector = SelectKBest(score_func=f_regression, k=numFeatures)
+        selector.fit(X, y)
+
+        selected_features = X.columns[selector.get_support()]
+
+        print(selected_features)
+
+        X_selected = X[selected_features]
+
+        kf = KFold(n_splits=numFolds)
+        model = LinearRegression()
+
+        # Initialize a list to store the mean squared error for each fold
+        mse_list = []
+        for train_index, test_index in kf.split(X):
+
+            X_train, X_test = X_selected.iloc[train_index], X_selected.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+
+            model.fit(X_train, y_train)
+
+            y_pred = model.predict(X_test)
+
+            mse_list.append(mean_squared_error(y_test, y_pred))
+
+        mean_mse = np.mean(mse_list)
+        
+        return mean_mse
+    
+    def prepRookieData(self, df, standardize= False):
+
+        labels = df["AVG"]
+
+        raw_feats = df.iloc[: ,[0] + list(range(4, df.shape[1] - 1))]
+
+        def convert_to_int(val):
+            if isinstance(val, str) and val.endswith('T'):
+                return int(val[:-1])
+            else:
+                return int(val)
+
+        raw_feats[['passing_Lng', 'rushing_Lng', 'receiving_Lng']] = raw_feats[['passing_Lng', 'rushing_Lng', 'receiving_Lng']].applymap(convert_to_int)
+
+        if standardize:
+
+            scaler = StandardScaler()
+
+            scaler.fit(raw_feats)
+
+            standardized = scaler.transform(raw_feats)
+
+            feats = pd.DataFrame(standardized, columns=df.iloc[: ,[0] + list(range(4, df.shape[1] - 1))].columns)
+
+        else:
+            feats = raw_feats
+
+        return feats, labels
+
+
     
