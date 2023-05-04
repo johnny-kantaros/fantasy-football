@@ -1,6 +1,7 @@
 import pandas as pd
 from selenium import webdriver
 from bs4 import BeautifulSoup
+import requests
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -12,10 +13,497 @@ from sklearn.preprocessing import StandardScaler
 class Fantasy:
 
 
-    def read_data():
+
+    """
+    
+    Function to perform preprocessing steps for WR data
+
+    Input: year
+    Output: Merged and cleaned advanced data set
+    
+    """
+    
+
+    def prepare_TE(self, year):
+
+        # First, lets get our normal data
+        TE_normal = self.read_new(year, "TE")
+        
+        # Next, lets clean the dataset:
+        TE_cleaned = self.clean_TE(TE_normal)
+
+        # Lets now pull in our advanced dataset
+        advanced = self.get_advanced_TE(year)
+
+        # We now need to merge the two frames together
+        # We will merge by the columns 'Player' and 'Tm'
+        merge_cols = ['Player', 'Tm']
+        merged_df = pd.merge(TE_cleaned, advanced, on=merge_cols, how='left')
+
+        # We want to make per-game stats instead of normal aggregate
+        # Therefore, lets divide all aggregate columns by total games played
+        columns_to_convert = ['REC', 'TGT', 'Receiving_Yds', '20+', 'Receiving_Td', 'ATT', 
+                              'Rushing_Yds', 'Rushing_Td',  'YBC', 'AIR', 'YAC', 'YACON', 
+                              'BRKTKL', 'CATCHABLE', 'DROP', 'RZ TGT', 'YBC', 'AIR', 'YAC', 
+                              'YACON', 'BRKTKL', '10+ YDS', '30+ YDS', '40+ YDS', '50+ YDS', 
+                              ]
+        
+        # Use for loop to iterate through each agg column
+        for col in columns_to_convert:
+            merged_df[col] = merged_df[col] / merged_df['G']
+
+        # Also, we do not want to include players who only appeared in a few games
+        # This could skew our dataset, so lets remove them
+        merged_df = merged_df[merged_df['G'] > 12]
+
+        # Finally, lets remove the names of the QB's and their total number of games
+        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        
+        # Lastly, lets impute the na values as the mean of the columns:
+
+        merged_df['% TM'] = merged_df['% TM'].str.replace('%', '')
+        merged_df['% TM'] = merged_df['% TM'].astype(float)
+
+        numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
+        merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
+        return merged_df
+
+
+    """
+    
+    Function to perform preprocessing steps for QB data
+
+    Input: year
+    Output: Merged and cleaned advanced data set
+    
+    """
+
+    def prepare_QB(self, year):
+
+        # First, lets get our normal data
+        QB_normal = self.read_new(year, "QB")
+        
+        # Next, lets clean the dataset:
+        QB_cleaned = self.clean_QB(QB_normal)
+
+        # Lets now pull in our advanced dataset
+        advanced = self.get_advanced_QB(year)
+
+        # We now need to merge the two frames together
+        # We will merge by the columns 'Player' and 'Tm'
+        merge_cols = ['Player', 'Tm']
+        merged_df = pd.merge(QB_cleaned, advanced, on=merge_cols, how='left')
+
+        # We want to make per-game stats instead of normal aggregate
+        # Therefore, lets divide all aggregate columns by total games played
+        columns_to_convert = ['CMP', 'Passing_att', 'Passing_Yds', 'Passing_Td', 'INT', 'SACKS', 
+                              'Rushing_att', 'Rushing_Yds', 'Rushing_Td', '10+ YDS', '20+ YDS', 
+                              '30+ YDS', '40+ YDS', '50+ YDS', 'KNCK', 'HRRY', 'BLITZ', 'POOR', 
+                              'DROP', 'RZ ATT', 'RTG']
+        
+        # Use for loop to iterate through each agg column
+        for col in columns_to_convert:
+            merged_df[col] = merged_df[col] / merged_df['G']
+
+        # Also, we do not want to include players who only appeared in a few games
+        # This could skew our dataset, so lets remove them
+        merged_df = merged_df[merged_df['G'] > 9]
+
+        # Finally, lets remove the names of the QB's and their total number of games
+        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+
+        return merged_df
+    
+
+
+    """
+    
+    Function to perform preprocessing steps for WR data
+
+    Input: year
+    Output: Merged and cleaned advanced data set
+    
+    """
+    
+
+    def prepare_WR(self, year):
+
+        # First, lets get our normal data
+        WR_normal = self.read_new(year, "WR")
+        
+        # Next, lets clean the dataset:
+        WR_cleaned = self.clean_WR(WR_normal)
+
+        # Lets now pull in our advanced dataset
+        advanced = self.get_advanced_WR(year)
+
+        # We now need to merge the two frames together
+        # We will merge by the columns 'Player' and 'Tm'
+        merge_cols = ['Player', 'Tm']
+        merged_df = pd.merge(WR_cleaned, advanced, on=merge_cols, how='left')
+
+        # We want to make per-game stats instead of normal aggregate
+        # Therefore, lets divide all aggregate columns by total games played
+        columns_to_convert = ['REC', 'TGT', 'Receiving_Yds', '20+', 'Receiving_Td', 'ATT', 
+                              'Rushing_Yds', 'Rushing_Td', 'YBC', 'AIR', 'YAC', 
+                              'YACON', 'BRKTKL', 'CATCHABLE', 'DROP', 'RZ TGT', '10+ YDS', '30+ YDS', 
+                              '40+ YDS', '50+ YDS']
+        
+        # Use for loop to iterate through each agg column
+        for col in columns_to_convert:
+            merged_df[col] = merged_df[col] / merged_df['G']
+
+        # Also, we do not want to include players who only appeared in a few games
+        # This could skew our dataset, so lets remove them
+        merged_df = merged_df[merged_df['G'] > 12]
+
+        # Finally, lets remove the names of the QB's and their total number of games
+        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        
+        # Lastly, lets impute the na values as the mean of the columns:
+
+        merged_df['% TM'] = merged_df['% TM'].str.replace('%', '')
+        merged_df['% TM'] = merged_df['% TM'].astype(float)
+
+        numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
+        merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
+        return merged_df
+    
+
+    """
+    
+    Function to perform preprocessing steps for RB data
+
+    Input: year
+    Output: Merged and cleaned advanced data set
+    
+    """
+    
+
+
+    def prepare_RB(self, year):
+
+        # First, lets get our normal data
+        RB_normal = self.read_new(year, "RB")
+        
+        # Next, lets clean the dataset:
+        RB_cleaned = self.clean_RB(RB_normal)
+
+        # Lets now pull in our advanced dataset
+        advanced = self.get_advanced_RB(year)
+
+        # We now need to merge the two frames together
+        # We will merge by the columns 'Player' and 'Tm'
+        merge_cols = ['Player', 'Tm']
+        merged_df = pd.merge(RB_cleaned, advanced, on=merge_cols, how='left')
+
+        # We want to make per-game stats instead of normal aggregate
+        # Therefore, lets divide all aggregate columns by total games played
+        columns_to_convert = ['ATT', 'Rushing_Yds', 'Rushing_Td', '20+', 'REC', 'TGT', 
+                              'Receiving_Yds', 'Receiving_Td', 'YBCON', 'YACON', 'BRKTKL', 
+                              'TK LOSS', 'TK LOSS YDS', '50+ YDS', '10+ YDS', 
+                              '30+ YDS', '40+ YDS', 'RZ TGT', 
+                              'YACON.1']
+
+        # Use for loop to iterate through each agg column
+        for col in columns_to_convert:
+            merged_df[col] = merged_df[col] / merged_df['G']
+
+        # Also, we do not want to include players who only appeared in a few games
+        # This could skew our dataset, so lets remove them
+        merged_df = merged_df[merged_df['G'] > 9]
+
+        # Remove the names of the RB's and their total number of games
+        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+
+        # Lastly, lets impute the na values as the mean of the columns:
+        numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
+        merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
+        
+        return merged_df
+    
+
+    """
+    
+    Function to clean tight end data
+    
+    Input: TE dataset
+    Output: Cleaned dataset 
+    
+    """
+
+    def clean_TE(self, df):
+
+        columns_to_drop = ['ROST', 'FPTS', 'Rank', 'FL']
+        # Drop unneeded columns
+        df = df.drop(columns_to_drop, axis=1)
+
+        # Rename duplicate columns
+        updated_columns = {'YDS.1': 'Rushing_Yds', 'YDS': 'Receiving_Yds', 
+                            'TD.1': 'Rushing_Td', 'TD': 'Receiving_Td'}
+        
+        df = df.rename(columns=updated_columns)
+        return df
+
+
+
+    """
+    
+    Function to clean wide receiver data
+    
+    Input: WR dataset
+    Output: Cleaned dataset 
+    
+    """
+
+    def clean_WR(self, df):
+
+        columns_to_drop = ['ROST', 'FPTS', 'Rank', 'FL']
+        # Drop unneeded columns
+        df = df.drop(columns_to_drop, axis=1)
+
+        # Rename duplicate columns
+        updated_columns = {'YDS': 'Receiving_Yds', 'YDS.1': 'Rushing_Yds', 
+                            'TD.1': 'Rushing_Td', 'TD': 'Receiving_Td'}
+        
+        df = df.rename(columns=updated_columns)
+        return df
+
+
+
+
+    """
+    
+    Function to clean running back data
+    
+    Input: RB dataset
+    Output: Cleaned dataset 
+    
+    """
+
+    def clean_RB(self, df):
+
+        columns_to_drop = ['ROST', 'FPTS', 'Rank', 'FL']
+        # Drop unneeded columns
+        df = df.drop(columns_to_drop, axis=1)
+
+        # Rename duplicate columns
+        updated_columns = {'YDS': 'Rushing_Yds', 'YDS.1': 'Receiving_Yds', 
+                            'TD': 'Rushing_Td', 'TD.1': 'Receiving_Td'}
+        
+        df = df.rename(columns=updated_columns)
+        return df
+    
+
+
+    """
+    
+    Web scrape new advanced data for TE
+
+    Input: year, pos
+    Output: advanced dataset with no duplicates
+    
+    """
+
+    def get_advanced_TE(self, year):
+
+        url = f"https://www.fantasypros.com/nfl/advanced-stats-te.php?year={year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        df = pd.read_html(html, header=1)[0]
+
+        # Clean name and team data
+        df.insert(1, 'Tm', df['Player'].str.rsplit(n=1).str[-1].str.slice(1, -1))
+        df['Player'] = df['Player'].str.rsplit(n=1).str[0]        
+        
+        dup_columns = ['LNG', 'YDS', 'Y/R', '20+ YDS' , 'G', 'TGT', 'REC', 'Rank']
+        
+        df = df.drop(dup_columns, axis=1)
+        return df
+
+
+    """
+    
+    Web scrape new advanced data for RB
+
+    Input: year, pos
+    Output: advanced dataset with no duplicates
+    
+    """
+
+    def get_advanced_RB(self, year):
+
+        url = f"https://www.fantasypros.com/nfl/advanced-stats-rb.php?year={year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        df = pd.read_html(html, header=1)[0]
+
+        # Clean name and team data
+        df.insert(1, 'Tm', df['Player'].str.rsplit(n=1).str[-1].str.slice(1, -1))
+        df['Player'] = df['Player'].str.rsplit(n=1).str[0]        
+        
+        dup_columns = ['ATT', 'YDS', '20+ YDS' , 'Y/ATT', 'G', 'TGT', 'LNG', 'REC', 'Rank']
+        
+        df = df.drop(dup_columns, axis=1)
+        return df
+    
+
+    """
+    
+    Web scrape new advanced data for WR
+
+    Input: year, pos
+    Output: advanced dataset with no duplicates
+    
+    """
+
+    def get_advanced_WR(self, year):
+
+        url = f"https://www.fantasypros.com/nfl/advanced-stats-wr.php?year={year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        df = pd.read_html(html, header=1)[0]
+
+        # Clean name and team data
+        df.insert(1, 'Tm', df['Player'].str.rsplit(n=1).str[-1].str.slice(1, -1))
+        df['Player'] = df['Player'].str.rsplit(n=1).str[0]        
+        
+        dup_columns = ['LNG', 'YDS', 'Y/R', '20+ YDS' , 'G', 'TGT', 'REC', 'Rank']
+        
+        df = df.drop(dup_columns, axis=1)
+        return df
+
+
+
+
+    """
+
+    Function to retrieve new data
+
+    Inputs: year, position
+    output: positional dataset with y included
+
+    """
+
+    def read_new(self, year, pos):
+
+        # Link takes lowercase positions
+        pos = pos.lower()
+
+        url = f"https://www.fantasypros.com/nfl/stats/{pos}.php?year={year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        df = pd.read_html(html, header=1)[0]
+
+        # Clean name and team data
+
+        df.insert(1, 'Tm', df['Player'].str.rsplit(n=1).str[-1].str.slice(1, -1))
+        df['Player'] = df['Player'].str.rsplit(n=1).str[0]
+
+
+
+        # Get y (following year ppg)
+        next_year = str(int(year) + 1)
+        url = f"https://www.fantasypros.com/nfl/stats/{pos}.php?year={next_year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        y = pd.read_html(html, header=1)[0]
+
+        df['y'] = y['FPTS/G']
+
+        return df
+
+
+
+
+    """
+    
+    Function to clean quarterback data
+    
+    Input: QB dataset
+    Output: Cleaned dataset 
+    
+    """
+
+
+    def clean_QB(self, df):
+
+        columns_to_drop = ['ROST', 'FPTS', 'Rank', 'FL']
+
+        # Drop unneeded columns
+        df = df.drop(columns_to_drop, axis=1)
+
+        # Rename duplicate columns
+        updated_columns = {'ATT': 'Passing_att', 'YDS': 'Passing_Yds', 
+                           'ATT.1': 'Rushing_att', 'YDS.1': 'Rushing_Yds', 
+                           'TD': 'Passing_Td', 'TD.1': 'Rushing_Td'}
+
+        df = df.rename(columns=updated_columns)
+        return df
+
+
+
+
+    """
+    
+    Web scrape new advanced data for QB
+
+    Input: year, pos
+    Output: advanced dataset with no duplicates
+    
+    """
+
+    def get_advanced_QB(self, year):
+
+
+        url = f"https://www.fantasypros.com/nfl/advanced-stats-qb.php?year={year}"
+
+        response = requests.get(url)
+        html = response.content
+
+        # Make df
+        df = pd.read_html(html, header=1)[0]
+
+        # Clean name and team data
+
+        df.insert(1, 'Tm', df['Player'].str.rsplit(n=1).str[-1].str.slice(1, -1))
+        df['Player'] = df['Player'].str.rsplit(n=1).str[0]
+
+        dup_columns = ['ATT', 'YDS', 'SK', 'CMP', 'PCT', 'Y/A', 'G', 'AIR', 'Rank']
+        df = df.drop(dup_columns, axis=1)
+
+        return df
+
+
+
+    """
+    
+    Function for web-scraping our main player data
+
+    Inputs: year
+    Outputs: df (X matrix), y (target vector)
+    
+    """
+
+    def read_data(year):
 
         # Get X matrix (base)
-        df = pd.read_excel('2021-offense.xlsx', sheet_name='Offense_2020', header=3)
+        df = pd.read_excel(year + '-offense.xlsx', sheet_name='Offense_2020', header=3)
 
         # Drop columns that we don't need
         drop_columns = ['GS', 'Bye', 'Notes', 'Rank', 'Y! Roto', 'Δ', 'Y! Old', 'Std', 'Δ.1', 'Std Old', 'PPR', 'Δ.2', 'PPR Old', '% Own', 'Fan Pts', 'PPG']
@@ -31,27 +519,28 @@ class Fantasy:
         # Get y vector
 
         df2 = pd.read_excel('2022-offense.xlsx', sheet_name='Offense_Prior_Actuals', header=3)
-        y = df2['Fan Pts']
+        y = pd.DataFrame()
+        y['Player'] = df2['Player']
+        y['PPG'] = df2['PPG']
+        y['Pos'] = df2['Pos']
+
 
         return df, y
 
-    def addContracts(self, df_raw, df_contracts):
-        df_raw
-        # for i in range(len(df_contracts)):
-        #     for ii in range(len(df_raw)):
-                # print(i)
-                # if df_raw.loc[ii, "Player"].split()[1] == df_contracts.loc[i, "Player"].split()[1]:
-                    # print(df_contracts.loc[i, "Player"].split()[1])
-        # for i in range(len(df_raw)):
-        #     print(df_raw.loc[i, "Player"], df_raw.loc[i, "Team"])
 
-    def addAdvanced(self, df_raw, df_advanced):
-        # new data frame with split value columns
-        df_advanced['Player'] = df_advanced['Player'].apply(self.extract_initial_last_name)
 
-        merged_df = df_raw.merge(df_advanced, on=['Player', 'Tm'], how='left').fillna(0)
 
-        return merged_df
+
+    """
+    
+    Function to properly format player names in anticipation of merging
+
+    Inputs: full name (Pandas column)
+    Outputs: Corrected column
+    
+    """
+    
+
     
     def extract_initial_last_name(self, full_name):
         name_parts = full_name.split(' ')
@@ -60,27 +549,42 @@ class Fantasy:
         elif len(name_parts) == 2:
             first_name, last_name = name_parts
             return f"{first_name[0]}. {last_name}"
-        else:
-            return full_name
+        elif len(name_parts) == 3:
+            first_name = name_parts[0]
+            last_name = name_parts[1]
+            rest = name_parts[2]
+            return f"{first_name[0]}. {last_name} {rest}"
 
 
+
+
+
+
+    """
     
-    def makeRegularData(self, df, position):
+    Function to split the df by position
+
+    Inputs: df, position
+    Outputs: sliced df
+    
+    """
+    
+    def splitByPos(self, df, position):
         QB_data = df[df["Pos"] == "QB"]
         qb_drop_columns = ['Tgt', 'Rec', 'Receiving_Yds', 'Receiving_Td', 'Receiving_1st', 'Return_Yds', 'Return_Td', '2PT',]
-        QB_data = QB_data.drop(qb_drop_columns, axis=1)
+        QB_data = QB_data.drop(qb_drop_columns, axis=1).reset_index(drop = True)
 
         RB_data = df[df["Pos"] == "RB"]
         rb_drop_columns = [ 'Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st']
-        RB_data = RB_data.drop(rb_drop_columns, axis=1)
+        RB_data = RB_data.drop(rb_drop_columns, axis=1).reset_index(drop = True)
 
         WR_data = df[df["Pos"] == "WR"]
         wr_drop_columns = ['Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st']
-        WR_data = WR_data.drop(wr_drop_columns, axis=1)
+        WR_data = WR_data.drop(wr_drop_columns, axis=1).reset_index(drop = True)
 
         TE_data = df[df["Pos"] == "TE"]
         te_drop_columns = ['Comp', 'Inc', 'Passing_Yds', 'Passing_Td', 'Int', 'Pic6', 'Sks', 'Passing_1st', 'Return_Yds', 'Return_Td']
-        TE_data = TE_data.drop(te_drop_columns, axis=1)
+        TE_data = TE_data.drop(te_drop_columns, axis=1).reset_index(drop = True)
 
         if position == "QB": 
             return QB_data
@@ -90,6 +594,19 @@ class Fantasy:
             return WR_data
         elif position == "TE":
             return TE_data
+        
+
+
+
+
+    """
+    
+    Function to web-scrape advanced stats
+
+    Inputs: type of stat, year
+    Outputs: Advanced stats in pandas df
+    
+    """
 
     
     def getAdvancedStats(self, type, year):
@@ -97,18 +614,60 @@ class Fantasy:
 
 
         if type == "rushing":
-            return self.get_table(url_pro_football_reference, "rushing")
+
+            table = self.get_table(url_pro_football_reference, "rushing")
+
+            # Drop unneeded columns
+            drop_cols = ['Age', 'YBC', 'Tm', 'Att', 'G', 'GS', 'Yds', 'Pos', 'TD', '1D', 'YAC', 'BrkTkl']
+            table = table.drop(drop_cols, axis=1)
+
+            
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
+
+            
+             
         
         elif type == "receiving":
-            return self.get_table(url_pro_football_reference, "receiving")
+            
+            table = self.get_table(url_pro_football_reference, "receiving")
 
+            drop_cols = ['YBC', 'Tm', 'G', 'GS', 'Tgt', 'Rec', 'Yds', 'Pos', 'TD', '1D', 'YBC', 'YAC', 'BrkTkl', 'Drop']
+            table = table.drop(drop_cols, axis=1)
+            
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
         else:
 
             table = pd.read_html(url_pro_football_reference, header=1)[0]
             table['Player'] = table['Player'].str.replace('*', '')
             table['Player'] = table['Player'].str.replace('+', '')
-        
-            return table
+
+            drop_cols = ['Tm', 'G', 'GS', 'Cmp', 'Att', 'Yds', 'IAY', 'CAY', 'YAC', 'Pos']
+            table = table.drop(drop_cols, axis=1)
+
+            # Format name correctly
+            table['Player'] = table['Player'].apply(self.extract_initial_last_name)
+            table['Player'] = table['Player'].str.strip()
+
+
+        return table
+    
+
+
+
+
+
+    """
+    
+    Helper function used to bypass dynamically generated JS tables
+
+    Input: link, type
+    Output: table (Pandas Df)
+    
+    """
     
 
     def get_table(self, link, type):
