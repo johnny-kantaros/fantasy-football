@@ -1,36 +1,20 @@
 ## Abstract
-In 3-4 sentences, concisely describe:
-
-What problem your project addresses.
-The overall approach you will use to solve the problem.
-How you propose to evaluate your success against your stated goals.
 
 We are hoping to create a algorithm that looks at NFL players performance and predicts their performance for the following year. By doing so, we will be able to create a ranking that can be used to predict Fantasy Football Performance. We will evaluate the effectiveness of our model by running it against previous years and seeing how it performed predicting player performance vs how they actually performed that year.
 
 ## Motivation and Question
-Describe your motivation for your project idea.
 
 We are all very interested in the intersection between sports and statistics. Football is a sport where statistics are tracked frequently and there are many available. We are hoping to find which statistics and variables are more significant in determining a players performance year to year. Fantasy Football is played by millions of people all over the world and an effective algorithm would be helpful to all players.
 
 ## Planned Deliverables
-Concisely state what you are aiming to create and what capabilities it will have.
 
 We are hoping to deliver a Python package containing all code we will use for our algorithm and a Jupyter notebook where analysis and performance is examined. We will need to extensively clean our data and ensure the data set we are looking at has all variables we are hoping to look at. If our model proves to be ineffective, at least we will be able to determine which statistics are not helpful in predicting performance year to year.
 
-## Written Deliverables
-You’ll also write a blog post on your project; you don’t have to discuss this post in your proposal though.
-
 ## Resources Required
-What resources do you need in order to complete your project? Data? Computing power? An account with a specific service?
-
-Please pay special attention to the question of data. If your project idea involves data, include at least one link to a data set you can use. If you can’t find data for your original idea, that’s ok! Think of something related to your group’s interests for which you can find data.
-
-Most projects should involve data in some way, but certain projects may not require data. Ask me if you’re not sure.
 
 We will be working with numerous data sources. We are hoping to take the basic stats that all Fantasy Football users look at and add several additional statistics we think might be helpful in predicting performance. We are hoping to create a master dataset that we can use to run learning methods and make conclusions on. Once we have a functioning dataset, we will need to run learning models that will give us a ranking for the players in our dataset.
 
 ## What You Will Learn
-Each group member should return to their stated goals from the reflective goal-setting assignment at the beginning of the course. Then, in this section, please state what each group member intends to learn through working on the project, relating your intentions to your stated goals. You might be thinking of certain algorithms, software packages, version control, project management, effective teamwork, etc.
 
 Johnny:  
 -Data collection, web scraping, working with API's  
