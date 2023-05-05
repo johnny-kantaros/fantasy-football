@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import SGDRegressor
 
 
 class Fantasy:
@@ -629,29 +630,43 @@ class Fantasy:
 
         selected_features = X.columns[selector.get_support()]
 
-        print(selected_features)
+        # print(selected_features)
 
         X_selected = X[selected_features]
 
         kf = KFold(n_splits=numFolds)
-        model = LinearRegression()
+        models = []
+
+        linear = LinearRegression()
+        models.append(linear)
+
+        stochastic = SGDRegressor(max_iter=1000, tol=1e-3)
+        models.append(stochastic)
+
+
 
         # Initialize a list to store the mean squared error for each fold
-        mse_list = []
-        for train_index, test_index in kf.split(X):
+        output = None
+        minMse = 100000
+        for model in models:
+            mse_list = []
+            for train_index, test_index in kf.split(X):
 
-            X_train, X_test = X_selected.iloc[train_index], X_selected.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+                X_train, X_test = X_selected.iloc[train_index], X_selected.iloc[test_index]
+                y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-            model.fit(X_train, y_train)
+                model.fit(X_train, y_train)
 
-            y_pred = model.predict(X_test)
+                y_pred = model.predict(X_test)
 
-            mse_list.append(mean_squared_error(y_test, y_pred))
+                mse_list.append(mean_squared_error(y_test, y_pred))
 
-        mean_mse = np.mean(mse_list)
+            mean_mse = np.mean(mse_list)
+            if output == None or mean_mse < minMse:
+                output = {"mean mse": mean_mse, "model": model}
+                minMse = mean_mse
         
-        return mean_mse
+        return output
     
     def prepRookieData(self, df, standardize= False):
 
