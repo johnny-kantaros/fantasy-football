@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 class Fantasy:
@@ -66,7 +67,12 @@ class Fantasy:
 
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
-        return merged_df
+
+        # Standardize data
+        scaler = MinMaxScaler()
+        df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+
+        return df_scaled
 
 
     """
@@ -112,7 +118,11 @@ class Fantasy:
         # Finally, lets remove the names of the QB's and their total number of games
         merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
 
-        return merged_df
+        # Standardize data
+        scaler = MinMaxScaler()
+        df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+
+        return df_scaled
     
 
 
@@ -167,7 +177,12 @@ class Fantasy:
 
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
-        return merged_df
+        
+        # Standardize data
+        scaler = MinMaxScaler()
+        df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+
+        return df_scaled
     
 
     """
@@ -220,7 +235,11 @@ class Fantasy:
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
         
-        return merged_df
+        # Standardize data
+        scaler = MinMaxScaler()
+        df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+
+        return df_scaled
     
 
     """
