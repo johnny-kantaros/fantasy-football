@@ -10,6 +10,9 @@ from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import SGDRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import mean_squared_error
+from random import randint
 
 
 class Fantasy:
@@ -630,8 +633,6 @@ class Fantasy:
 
         selected_features = X.columns[selector.get_support()]
 
-        # print(selected_features)
-
         X_selected = X[selected_features]
 
         kf = KFold(n_splits=numFolds)
@@ -643,6 +644,10 @@ class Fantasy:
         stochastic = SGDRegressor(max_iter=1000, tol=1e-3)
         models.append(stochastic)
 
+        neural_network = MLPRegressor(hidden_layer_sizes=(2 * numFeatures, 2 * numFeatures,
+                                                          2 * numFeatures, 2 * numFeatures,
+                                                          2 * numFeatures, 2 * numFeatures), activation='relu', solver='adam', random_state=randint(1, 99))
+        models.append(neural_network)
 
 
         # Initialize a list to store the mean squared error for each fold
