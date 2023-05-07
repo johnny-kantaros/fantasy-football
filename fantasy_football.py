@@ -663,7 +663,7 @@ class Fantasy:
 
             mean_mse = np.mean(mse_list)
             if output == None or mean_mse < minMse:
-                output = {"mean mse": mean_mse, "model": model, "features": selected_features}
+                output = {"mean mse": mean_mse, "model": model, "features": selected_features, "coefficients": model.coef_}
                 minMse = mean_mse
         
         return output
