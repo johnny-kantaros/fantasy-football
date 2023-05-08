@@ -29,7 +29,7 @@ class Fantasy:
     """
     
 
-    def prepare_TE(self, year):
+    def prepare_TE(self, year, current):
 
         # First, lets get our normal data
         TE_normal = self.read_new(year, "TE")
@@ -62,7 +62,10 @@ class Fantasy:
         merged_df = merged_df[merged_df['G'] > 12]
 
         # Finally, lets remove the names of the QB's and their total number of games
-        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        if current == True:
+                merged_df = merged_df.drop(['G', 'Tm'], axis=1)
+        else:
+            merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
         
         # Lastly, lets impute the na values as the mean of the columns:
 
@@ -73,14 +76,23 @@ class Fantasy:
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
 
         y_df = pd.DataFrame()
-        y_df = merged_df['y']
+        y_df['y'] = merged_df['y']
+        if current == True:
+            
+            y_df['Player'] = merged_df['Player']
+
+            merged_df = merged_df.drop(['Player'], axis=1)
 
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
         df_scaled.drop(['y'], axis=1)
 
-        df_scaled['y'] = y_df
+        
+        df_scaled['y'] = y_df['y']
+        if current == True:
+            df_scaled['Player'] = y_df['Player']
+        # print('Here')
         df_scaled = df_scaled.dropna()
 
         return df_scaled
@@ -95,7 +107,7 @@ class Fantasy:
     
     """
 
-    def prepare_QB(self, year):
+    def prepare_QB(self, year, current):
 
         # First, lets get our normal data
         QB_normal = self.read_new(year, "QB")
@@ -127,17 +139,29 @@ class Fantasy:
         merged_df = merged_df[merged_df['G'] > 9]
 
         # Finally, lets remove the names of the QB's and their total number of games
-        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        if current == True:
+                merged_df = merged_df.drop(['G', 'Tm'], axis=1)
+        else:
+            merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
 
         y_df = pd.DataFrame()
-        y_df = merged_df['y']
+        y_df['y'] = merged_df['y']
+        if current == True:
+            
+            y_df['Player'] = merged_df['Player']
+
+            merged_df = merged_df.drop(['Player'], axis=1)
 
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
         df_scaled.drop(['y'], axis=1)
 
-        df_scaled['y'] = y_df
+        
+        df_scaled['y'] = y_df['y']
+        if current == True:
+            df_scaled['Player'] = y_df['Player']
+        # print('Here')
         df_scaled = df_scaled.dropna()
 
         return df_scaled
@@ -154,7 +178,7 @@ class Fantasy:
     """
     
 
-    def prepare_WR(self, year):
+    def prepare_WR(self, year, current):
 
         # First, lets get our normal data
         WR_normal = self.read_new(year, "WR")
@@ -186,7 +210,10 @@ class Fantasy:
         merged_df = merged_df[merged_df['G'] > 12]
 
         # Finally, lets remove the names of the QB's and their total number of games
-        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        if current == True:
+                merged_df = merged_df.drop(['G', 'Tm'], axis=1)
+        else:
+            merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
         
         # Lastly, lets impute the na values as the mean of the columns:
 
@@ -197,15 +224,25 @@ class Fantasy:
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
         
         y_df = pd.DataFrame()
-        y_df = merged_df['y']
+        y_df['y'] = merged_df['y']
+        if current == True:
+            
+            y_df['Player'] = merged_df['Player']
+
+            merged_df = merged_df.drop(['Player'], axis=1)
 
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
         df_scaled.drop(['y'], axis=1)
 
-        df_scaled['y'] = y_df
+        
+        df_scaled['y'] = y_df['y']
+        if current == True:
+            df_scaled['Player'] = y_df['Player']
+        # print('Here')
         df_scaled = df_scaled.dropna()
+
         return df_scaled
     
 
