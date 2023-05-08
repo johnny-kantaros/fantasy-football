@@ -220,7 +220,7 @@ class Fantasy:
     
 
 
-    def prepare_RB(self, year):
+    def prepare_RB(self, year, current):
 
         # First, lets get our normal data
         RB_normal = self.read_new(year, "RB")
@@ -253,21 +253,33 @@ class Fantasy:
         merged_df = merged_df[merged_df['G'] > 9]
 
         # Remove the names of the RB's and their total number of games
-        merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
+        if current == True:
+            merged_df = merged_df.drop(['G', 'Tm'], axis=1)
+        else:
+            merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
 
         # Lastly, lets impute the na values as the mean of the columns:
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
         
         y_df = pd.DataFrame()
-        y_df = merged_df['y']
+        y_df['y'] = merged_df['y']
+        if current == True:
+            
+            y_df['Player'] = merged_df['Player']
+
+            merged_df = merged_df.drop(['Player'], axis=1)
 
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
         df_scaled.drop(['y'], axis=1)
 
-        df_scaled['y'] = y_df
+        
+        df_scaled['y'] = y_df['y']
+        if current == True:
+            df_scaled['Player'] = y_df['Player']
+        # print('Here')
         df_scaled = df_scaled.dropna()
 
         return df_scaled
