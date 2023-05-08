@@ -129,9 +129,16 @@ class Fantasy:
         # Finally, lets remove the names of the QB's and their total number of games
         merged_df = merged_df.drop(['Player', 'G', 'Tm'], axis=1)
 
+        y_df = pd.DataFrame()
+        y_df = merged_df['y']
+
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+        df_scaled.drop(['y'], axis=1)
+
+        df_scaled['y'] = y_df
+        df_scaled = df_scaled.dropna()
 
         return df_scaled
     
@@ -189,10 +196,16 @@ class Fantasy:
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
         
+        y_df = pd.DataFrame()
+        y_df = merged_df['y']
+
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+        df_scaled.drop(['y'], axis=1)
 
+        df_scaled['y'] = y_df
+        df_scaled = df_scaled.dropna()
         return df_scaled
     
 
@@ -246,9 +259,16 @@ class Fantasy:
         numeric_cols = merged_df.select_dtypes(include=['float64', 'int64']).columns
         merged_df[numeric_cols] = merged_df[numeric_cols].fillna(merged_df[numeric_cols].mean())
         
+        y_df = pd.DataFrame()
+        y_df = merged_df['y']
+
         # Standardize data
         scaler = MinMaxScaler()
         df_scaled = pd.DataFrame(scaler.fit_transform(merged_df), columns=merged_df.columns)
+        df_scaled.drop(['y'], axis=1)
+
+        df_scaled['y'] = y_df
+        df_scaled = df_scaled.dropna()
 
         return df_scaled
     
