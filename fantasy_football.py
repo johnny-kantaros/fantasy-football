@@ -13,6 +13,12 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_squared_error
 from random import randint
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import Lasso
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import Ridge
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 
 
 class Fantasy:
@@ -701,9 +707,10 @@ class Fantasy:
         return total_data
     
 
-    def getBestFeatures(self, X, y, numFolds= 3, numFeatures = 5):
+    def getBestFeatures(self, X, y, numFeatures = 5):
         
 
+        # Get best features
         selector = SelectKBest(score_func=f_regression, k=numFeatures)
         selector.fit(X, y)
 
@@ -711,14 +718,79 @@ class Fantasy:
 
         X_selected = X[selected_features]
 
+        return X_selected, selected_features
+
+    
+    # Method to get model for dataset prediction
+
+    def get_model(self, X, y, numFolds= 3):
+
         kf = KFold(n_splits=numFolds)
         models = []
 
+
+        # MODELS
+
+        # First, normal linear regression
         linear = LinearRegression()
         models.append(linear)
 
+        # Next, stochastic regression
         stochastic = SGDRegressor(max_iter=1000, tol=1e-3)
         models.append(stochastic)
+
+
+        # Next, Ridge regression
+
+        alphas = [.001, .01, .1, 1, 5, 10]
+
+        ridge_cv = []
+
+        for a in alphas:
+            reg = Ridge(alpha=a)
+            ridge_cv_vals = cross_val_score(reg, X, y, cv=5)
+            ridge_cv.append(np.mean(ridge_cv_vals))
+
+        optimal_alpha = np.argmax(ridge_cv) + 1
+        ridge = Ridge(alpha=optimal_alpha)
+        
+        # Append to models
+        models.append(ridge)
+
+
+        # Lasso regression
+
+        alphas = [.001, .01, .1, 1, 5, 10]
+
+        lasso_cv = []
+
+        for a in alphas:
+            reg = Lasso(alpha=a)
+            lasso_cv_vals = cross_val_score(reg, X, y, cv=5)
+            lasso_cv.append(np.mean(lasso_cv_vals))
+
+        optimal_alpha = np.argmax(lasso_cv) + 1
+        lasso = Lasso(alpha=optimal_alpha)
+        
+        # Append to models
+        models.append(lasso)
+
+        # Decision tree regression
+
+        tree = DecisionTreeRegressor()
+        models.append(tree)
+
+
+        # Random Forest
+
+        rf = RandomForestRegressor()
+        models.append(rf)
+
+
+        # SVM regression
+
+        svr = SVR(kernel='rbf')
+        models.append(svr)
 
         # neural_network = MLPRegressor(hidden_layer_sizes=(2 * numFeatures, 2 * numFeatures,
         #                                                   2 * numFeatures, 2 * numFeatures,
@@ -727,27 +799,36 @@ class Fantasy:
 
 
         # Initialize a list to store the mean squared error for each fold
-        output = None
-        minMse = 100000
+        
+        optimal_model = None
+        min_mse = 100000
+
         for model in models:
             mse_list = []
             for train_index, test_index in kf.split(X):
 
-                X_train, X_test = X_selected.iloc[train_index], X_selected.iloc[test_index]
+                # What do these lines do
+                X_train, X_test = X.iloc[train_index], X.iloc[test_index]
                 y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
+                # Fit the model
                 model.fit(X_train, y_train)
 
+                # Get the predictions
                 y_pred = model.predict(X_test)
 
+                # Append the mse to the list
                 mse_list.append(mean_squared_error(y_test, y_pred))
 
+            # Get the mean mse for the model
             mean_mse = np.mean(mse_list)
-            if output == None or mean_mse < minMse:
-                output = {"mean mse": mean_mse, "model": model, "features": selected_features, "coefficients": model.coef_}
-                minMse = mean_mse
+            
+
+            if mean_mse < min_mse:
+                optimal_model = model
+                min_mse = mean_mse
         
-        return output
+        return optimal_model
     
     def prepRookieData(self, df, standardize= False):
 
