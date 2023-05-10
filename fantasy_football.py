@@ -682,29 +682,43 @@ class Fantasy:
 
         return raw_draft
 
-    def getYearlyRookieData(self, year):
+    def getYearlyRookieData(self, year, last_year= False):
 
         total_data = pd.DataFrame()
 
-        for y in range(year - 15, year + 1):
-            draft_data = self.getDraftData(year=str(y))
-            team_data = self.getTeamStats(year=str(y - 1))
+        if last_year == False:
+
+            for y in range(year - 15, year + 1):
+                draft_data = self.getDraftData(year=str(y))
+                team_data = self.getTeamStats(year=str(y - 1))
+                rookie_stats = pd.merge(draft_data, team_data, on='Team')
+
+                labels = pd.DataFrame(pd.read_html("https://www.fantasypros.com/nfl/reports/leaders/?year=" + str(y))[0])
+
+                labels = labels[["Player", "AVG"]]
+
+                labels = labels.drop_duplicates(subset="Player")
+
+                full_data = pd.merge(rookie_stats, labels, on='Player')
+
+                total_data = pd.concat([total_data, full_data], axis=0)
+
+
+            total_data = total_data.reset_index(drop=True)
+
+            return total_data
+        else:
+            draft_data = self.getDraftData(year=str(year))
+            team_data = self.getTeamStats(year=str(year - 1))
             rookie_stats = pd.merge(draft_data, team_data, on='Team')
 
-            labels = pd.DataFrame(pd.read_html("https://www.fantasypros.com/nfl/reports/leaders/?year=" + str(y))[0])
+            labels = pd.DataFrame(pd.read_html("https://www.fantasypros.com/nfl/reports/leaders/?year=" + str(year))[0])
 
             labels = labels[["Player", "AVG"]]
 
             labels = labels.drop_duplicates(subset="Player")
 
-            full_data = pd.merge(rookie_stats, labels, on='Player')
-
-            total_data = pd.concat([total_data, full_data], axis=0)
-
-
-        total_data = total_data.reset_index(drop=True)
-
-        return total_data
+            return pd.merge(rookie_stats, labels, on='Player')
     
 
     def getBestFeatures(self, X, y, numFeatures = 5):
@@ -792,10 +806,11 @@ class Fantasy:
         svr = SVR(kernel='rbf')
         models.append(svr)
 
-        # neural_network = MLPRegressor(hidden_layer_sizes=(2 * numFeatures, 2 * numFeatures,
-        #                                                   2 * numFeatures, 2 * numFeatures,
-        #                                                   2 * numFeatures, 2 * numFeatures), activation='relu', solver='adam', random_state=randint(1, 99))
-        # models.append(neural_network)
+        numFeatures = len(X)
+        neural_network = MLPRegressor(hidden_layer_sizes=(2 * numFeatures, 2 * numFeatures,
+                                                           2 * numFeatures, 2 * numFeatures,
+                                                           2 * numFeatures, 2 * numFeatures), activation='relu', solver='adam', random_state=randint(1, 99))
+        models.append(neural_network)
 
 
         # Initialize a list to store the mean squared error for each fold
